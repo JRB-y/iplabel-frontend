@@ -3,53 +3,57 @@
     <v-row justify="center" align="center">
       <v-col cols="12">
         <!-- === Card: Header, Input and Clear btn === -->
-        <v-card color="yellow lighten-2" flat>
+        <v-card color="orange lighten-1">
           <!-- TITLE -->
-          <v-card-title class="headline yellow">OMDB API</v-card-title>
+          <v-card-title class="headline orange white--text font-weight-bold">OMDB API</v-card-title>
           <!-- Little description -->
           <v-card-text>Exercice évaluation recrutement R&D ip-label (vue.js)</v-card-text>
-
           <!-- Input text -->
           <v-card-text>
-            <v-text-field label="Nom du Film" color="black" v-model="term" @keyup="termChanged"></v-text-field>
+            <!-- === Text field (term) === -->
+            <v-text-field
+              label="Nom du Film"
+              color="black"
+              v-model="query.term"
+              @keyup="termChanged"
+            ></v-text-field>
 
             <v-divider></v-divider>
 
-            <!-- clear term -->
+            <!-- === Clear btn === -->
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn :disabled="!term" @click="clear">
+              <v-btn :disabled="!query.term" @click="clear">
                 Effacer
                 <v-icon right>mdi-close-circle</v-icon>
               </v-btn>
             </v-card-actions>
           </v-card-text>
-        </v-card>
 
-        <!-- === Datatable === -->
-        <v-data-table
-          :headers="headers"
-          :items="movies"
-          :items-per-page="10"
-          :server-items-length="totalResults"
-          :loading="loading"
-          :hide-default-footer="true"
-          class="elevation-1"
-          @click:row="clicked"
-        ></v-data-table>
+          <!-- === Datatable === -->
+          <v-data-table
+            :headers="datatable.headers"
+            :items="movies"
+            :items-per-page="10"
+            :loading="datatable.loading"
+            :hide-default-footer="true"
+            class="elevation-1"
+            @click:row="clicked"
+          ></v-data-table>
+        </v-card>
 
         <!-- === Pagination === -->
         <v-pagination
-          color="yellow"
-          v-model="pagination.current"
-          :length="pagination.total"
+          color="orange"
+          v-model="query.pagination.current"
+          :length="query.pagination.total"
           @input="onPageChange"
         ></v-pagination>
       </v-col>
     </v-row>
 
-    <!-- MODAL DIALOG -->
-    <Modal :selectedMovie="selectedMovie" :show="show" @modal-close="show = false"></Modal>
+    <!-- MODAL DIALOG (show one movie) -->
+    <Modal :selectedMovie="selectedMovie" :show="showDialog" @modal-close="showDialog = false"></Modal>
   </v-container>
 </template>
 
@@ -61,20 +65,17 @@ export default {
   components: { Modal },
   data() {
     return {
-      term: "",
       url: "https://www.omdbapi.com/?apikey=8f0a5987&s=",
-      headers: [
-        { text: "Titre", value: "Title" },
-        { text: "Année", value: "Year" }
-      ],
-      movies: [],
-      totalResults: 0,
-      loading: false,
-      pagination: {
-        current: 1,
-        total: 0
+      url_movie: "https://www.omdbapi.com/?apikey=8f0a5987&plot=full&t=",
+      query: {
+        term: "",
+        t: "",
+        pagination: {
+          current: 1,
+          total: 0
+        }
       },
-      show: false,
+      movies: [],
       selectedMovie: {
         Title: "",
         Poster: "",
@@ -83,61 +84,77 @@ export default {
         Awards: "",
         Plot: "",
         Genre: ""
-      }
+      },
+      datatable: {
+        headers: [
+          { text: "Titre", value: "Title" },
+          { text: "Année", value: "Year" }
+        ],
+        totalResults: 0,
+        loading: false
+      },
+      showDialog: false
     };
   },
   methods: {
+    // When click on clear btn
     clear: function() {
-      this.term = null;
+      this.query.term = null;
       this.movies = [];
-      this.pagination.total = 0;
-      this.pagination.current = 1;
+      this.query.pagination.total = 0;
+      this.query.pagination.current = 1;
     },
+    // When the term change
     termChanged: function() {
-      if (this.term.trim().length < 3) {
-        this.loading = false;
-        this.pagination.total = 0;
-        this.pagination.current = 1;
-        this.movies = [];
+      // no search when term < 3
+      if (this.query.term.trim().length < 3) {
+        this.reset();
       }
-      if (this.term.trim().length >= 3) {
+      if (this.query.term.trim().length >= 3) {
         this.searchOmdb();
       }
     },
+    // click on row (show dialog)
     searchOmdb: async function() {
-      // if (this.pagination.current == this.pagination.total) return null;
+      this.datatable.loading = true;
 
-      this.loading = true;
       const response = await fetch(
-        `${this.url}${this.term.trim()}&page=${this.pagination.current}`
+        `${this.url}${this.query.term.trim()}&page=${
+          this.query.pagination.current
+        }`
       );
       const moviesResponse = await response.json();
+      // Handdle Error
+      if (moviesResponse.Error) return null;
 
-      if (moviesResponse.Error) {
-        console.log(moviesResponse.Error);
-        return null;
-      }
-
+      // movies data
       this.movies = moviesResponse.Search;
+      // Total results (pagination)
+      this.datatable.totalResults = parseInt(moviesResponse.totalResults);
+      // nbr of pages
+      this.query.pagination.total = Math.ceil(moviesResponse.totalResults / 10);
 
-      this.totalResults = parseInt(moviesResponse.totalResults);
-      this.pagination.total = Math.ceil(moviesResponse.totalResults / 10);
-
-      this.loading = false;
+      this.datatable.loading = false;
     },
+    // When paginate
     onPageChange: function() {
       this.searchOmdb();
     },
-    // clicked on a table row (display a single movie)
+    // clicked on a table row (show dialog)
     clicked: async function(value) {
-      const response = await fetch(
-        `https://www.omdbapi.com/?apikey=8f0a5987&plot=full&t=${value.Title}`
-      );
+      const response = await fetch(`${this.url_movie}${value.Title}`);
       const selectedMovieRequest = await response.json();
-      console.log(this.selectedMovie);
 
       this.selectedMovie = selectedMovieRequest;
-      this.show = true;
+
+      this.showDialog = true;
+    },
+    // reset the application (term, pagination and movies)
+    reset: function() {
+      this.datatable.loading = false;
+      this.query.pagination.total = 0;
+      this.query.pagination.current = 1;
+      this.movies = [];
     }
   }
 };

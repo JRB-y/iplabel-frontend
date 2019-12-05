@@ -6,9 +6,7 @@
       <v-card-title>{{ selectedMovie.Title }}</v-card-title>
 
       <v-card-text>
-        <div class="my-4 subtitle-1 black--text">
-          {{ selectedMovie.Awards }}
-        </div>
+        <div class="my-4 subtitle-1 black--text">{{ selectedMovie.Awards }}</div>
 
         <div>{{ selectedMovie.Plot }}.</div>
       </v-card-text>
@@ -18,7 +16,7 @@
       <v-card-title>Genre</v-card-title>
 
       <v-card-text>
-        <v-chip-group active-class="yellow accent-4 black--text" column>
+        <v-chip-group active-class="orange white--text" column>
           <v-chip>{{ selectedMovie.Genre }}</v-chip>
         </v-chip-group>
       </v-card-text>
