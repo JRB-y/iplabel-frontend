@@ -5,15 +5,17 @@
         <!-- === Card: Header, Input and Clear btn === -->
         <v-card color="orange lighten-1">
           <!-- TITLE -->
-          <v-card-title class="headline orange white--text font-weight-bold">OMDB API</v-card-title>
+          <v-card-title class="display-1 orange white--text font-weight-bold">OMDB API</v-card-title>
           <!-- Little description -->
-          <v-card-text>Exercice évaluation recrutement R&D ip-label (vue.js)</v-card-text>
+          <v-card-text
+            class="white--text headline"
+          >Exercice évaluation recrutement R&D ip-label (vue.js)</v-card-text>
           <!-- Input text -->
           <v-card-text>
             <!-- === Text field (term) === -->
             <v-text-field
               label="Nom du Film"
-              color="black"
+              color="white"
               v-model="query.term"
               @keyup="termChanged"
             ></v-text-field>
