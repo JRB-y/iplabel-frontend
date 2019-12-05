@@ -5,22 +5,13 @@
         <!-- === Card: Header, Input and Clear btn === -->
         <v-card color="yellow lighten-2" flat>
           <!-- TITLE -->
-          <v-card-title class="headline yellow">
-            OMDB API
-          </v-card-title>
+          <v-card-title class="headline yellow">OMDB API</v-card-title>
           <!-- Little description -->
-          <v-card-text>
-            Exercice évaluation recrutement R&D ip-label (vue.js)
-          </v-card-text>
+          <v-card-text>Exercice évaluation recrutement R&D ip-label (vue.js)</v-card-text>
 
           <!-- Input text -->
           <v-card-text>
-            <v-text-field
-              label="Nom du Film"
-              color="black"
-              v-model="term"
-              @keyup="termChanged"
-            ></v-text-field>
+            <v-text-field label="Nom du Film" color="black" v-model="term" @keyup="termChanged"></v-text-field>
 
             <v-divider></v-divider>
 
@@ -58,11 +49,7 @@
     </v-row>
 
     <!-- MODAL DIALOG -->
-    <Modal
-      :selectedMovie="selectedMovie"
-      :show="show"
-      @modal-close="show = false"
-    ></Modal>
+    <Modal :selectedMovie="selectedMovie" :show="show" @modal-close="show = false"></Modal>
   </v-container>
 </template>
 
@@ -75,7 +62,7 @@ export default {
   data() {
     return {
       term: "",
-      url: "http://www.omdbapi.com/?apikey=8f0a5987&s=",
+      url: "https://www.omdbapi.com/?apikey=8f0a5987&s=",
       headers: [
         { text: "Titre", value: "Title" },
         { text: "Année", value: "Year" }
@@ -144,7 +131,7 @@ export default {
     // clicked on a table row (display a single movie)
     clicked: async function(value) {
       const response = await fetch(
-        `http://www.omdbapi.com/?apikey=8f0a5987&plot=full&t=${value.Title}`
+        `https://www.omdbapi.com/?apikey=8f0a5987&plot=full&t=${value.Title}`
       );
       const selectedMovieRequest = await response.json();
       console.log(this.selectedMovie);
